@@ -1,0 +1,8 @@
+{
+	"body": "date \"+%Y-%m-%d %H-%M\"",
+	"method": 0,
+	"window_title": "",
+	"command": true,
+	"window_class": "",
+	"string": "$date"
+}

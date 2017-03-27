@@ -1,0 +1,8 @@
+{
+	"body": "First name\tLast name\tTabs are sent as actual keypresses via keyboard",
+	"command": false,
+	"window_title": "",
+	"method": 0,
+	"window_class": "",
+	"string": "$fill"
+}

@@ -1,6 +1,2 @@
 __pycache__
-xpander*.tar.gz
-dist/*
-deb_dist/*
-build/*
-xpander.egg-info/*
+scratchpad.py

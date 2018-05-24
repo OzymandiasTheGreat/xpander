@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+
+import time
+from pathlib import Path
+# ~ from threading import enumerate as thread_enum
+from xpander.fs import Settings, Manager
+from xpander.service import Service
+from xpander.control import Server
+
+
+settings = Settings()
+manager = Manager(settings,Path(__file__).resolve().parent )
+service = Service(settings)
+server = Server(service, manager, settings)
+server.daemon_path = Path(__file__).resolve().parent
+service.server = server
+service.start()
+server.start()
+
+service.register_hotkeys()
+for path, phrase in manager.phrases.items():
+	service.register_phrase(phrase)
+print('Go!')

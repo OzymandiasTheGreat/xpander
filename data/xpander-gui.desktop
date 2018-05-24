@@ -1,9 +1,10 @@
 [Desktop Entry]
-Name=xpander-indicator
+Name=xpander-gui
 GenericName=Text Expander
 Comment=Universal snippets and text expansion
-Exec=xpander-indicator
+Exec=xpander-gui
 Terminal=false
 Type=Application
 Icon=xpander
 Categories=Utility
+Name[en_US]=xpander-gui

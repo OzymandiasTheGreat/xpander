@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+
+import sys
+from argparse import ArgumentParser
+from subprocess import Popen
+from pathlib import Path
+from xpander.version import __version__, author, author_email
+from xpander.control import BaseClient, ClientType, MsgType, MSG
+
+
+NAME = 'xpander-cli'
+DAEMON = Path(__file__).resolve().with_name('xpanderd')
+
+
+parser = ArgumentParser(
+	description='Command line control interface for xpander daemon')
+parser.add_argument(
+	'-v', '--version', action='store_true',
+	help='show version and copyright then exit')
+parser.add_argument(
+	'-s', '--start', action='store_true', help='start xpander daemon')
+parser.add_argument(
+	'-q', '--quit', action='store_true', help='quit xpander daemon')
+parser.add_argument(
+	'-p', '--pause', action='store_true', help='toggle pausing of expansion')
+parser.add_argument(
+	'-e', '--editor', action='store_true', help='show/hide phrase editor')
+
+
+args = parser.parse_args()
+if args.version:
+	print('xpander {0}, Copyright {1} 2018 ({2})'.format(
+		__version__, author, author_email))
+	sys.exit(0)
+
+try:
+	client = BaseClient(NAME, (ClientType.CONTROLLER, NAME))
+	daemon = True
+except ConnectionRefusedError:
+	daemon = False
+
+if args.quit:
+	if daemon:
+		client.send(MSG(MsgType.EXIT, None))
+	else:
+		sys.exit('xpander daemon not running!')
+if args.start:
+	if not daemon:
+		if sys.platform.startswith('win32'):
+			if DAEMON.exists():
+				Popen(['python3', str(DAEMON)])
+			else:
+				try:
+					Popen([str(DAEMON.with_suffix('.exe'))])
+				except FileNotFoundError:
+					try:
+						Popen(['xpanderd.exe'])
+					except FileNotFoundError:
+						sys.exit("Can't find xpander daemon")
+		else:
+			if DAEMON.exists():
+				Popen([str(DAEMON)])
+			else:
+				try:
+					Popen(['xpanderd'])
+				except FileNotFoundError:
+					sys.exit("Can't find xpander daemon")
+	else:
+		sys.exit('xpander daemon already running!')
+if args.pause:
+	if daemon:
+		client.send(MSG(MsgType.PAUSE, None))
+	else:
+		sys.exit('xpander daemon not running!')
+if args.editor:
+	if daemon:
+		client.send(MSG(MsgType.EDITOR, None))
+	else:
+		sys.exit('xpander daemon not running!')
+if daemon:
+	client.close()
+sys.exit(0)

@@ -1,0 +1,34 @@
+{
+  "name": "xpander",
+  "version": "3.0.0rc0",
+  "description": "Text expander for Windows and Linux.",
+  "author": "Tomas Ravinskas",
+  "license": "MIT",
+  "main": "src/xpander.js",
+  "scripts": {
+    "tsc": "tsc",
+    "sass": "node-sass --importer=node_modules/node-sass-tilde-importer src/static/styles/ -o src/static/styles",
+    "start": "yarn sass && yarn tsc && electron --disable-gpu ."
+  },
+  "dependencies": {
+    "ini": "^1.3.5",
+    "jqtree": "^1.4.12",
+    "jquery": "^3.4.1",
+    "material-design-icons-iconfont": "^5.0.1",
+    "materialize-css": "^1.0.0-rc.2",
+    "python-shell": "^1.0.8",
+    "readdirp": "^3.3.0",
+    "rimraf": "^3.0.1",
+    "simditor": "2.3.22",
+    "xdg-app-paths": "^5.2.0"
+  },
+  "devDependencies": {
+    "@types/jquery": "^3.3.31",
+    "@types/ini": "^1.3.30",
+    "@types/materialize-css": "^1.0.7",
+    "electron": "^7.1.9",
+    "node-sass": "^4.13.1",
+    "node-sass-tilde-importer": "^1.0.2",
+    "typescript": "^3.7.5"
+  }
+}

@@ -1,0 +1,14 @@
+{
+	"hotstring": "llink",
+	"triggers": [
+		" ",
+		"\n",
+		"\t"
+	],
+	"type": "plaintext",
+	"body": "<a href=\"$C\">$|</a>",
+	"method": "paste",
+	"wm_class": [],
+	"wm_title": "",
+	"hotkey": null
+}

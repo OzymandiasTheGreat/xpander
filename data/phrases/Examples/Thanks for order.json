@@ -1,0 +1,14 @@
+{
+	"hotstring": "tthanks",
+	"triggers": [
+		" ",
+		"\n",
+		"\t"
+	],
+	"type": "richtext",
+	"body": "<i>Dear $fillentry:name=name:default=Oz$,</i><br><br>We have received your order of $fillentry:name=amount:default=5$ widgets,<br>they should ship on %@+1W%B %d, %Y.<br><br>$filloption:You have not included payment information with your order.$<br><br>Thank you for ordering from Acme Corporation!",
+	"method": "paste",
+	"wm_class": [],
+	"wm_title": "",
+	"hotkey": null
+}

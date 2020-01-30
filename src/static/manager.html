@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+	<link rel="stylesheet" href="styles/manager.css">
+
+	<script>exports = {};</script>
+	<script>window.$ = window.jQuery = require('jquery');</script>
+	<script defer src="../xpander_ts/manager.js"></script>
+
+	<title>Xpander</title>
+</head>
+<body>
+<ul id="tabs" class="tabs center grey lighten-4">
+	<li class="tab"><a href="#manager" class="active"><i class="material-icons">note</i>Phrases</a></li>
+	<li class="tab"><a href="#settings"><i class="material-icons">settings</i>Settings</a></li>
+</ul>
+<section id="manager" class="row">
+	<div id="sidebar" class="col s4">
+		<div id="files"></div>
+		<div id="filesToolbar" class="fixed-action-btn">
+			<a class="btn-floating btn-large red" title="New">
+				<i class="large material-icons">add</i>
+			</a>
+			<ul>
+				<li><a id="newPhrase" class="btn-floating yellow darken-1" title="New phrase">
+					<i class="material-icons">note_add</i>
+				</a></li>
+				<li><a id="newFolder" class="btn-floating blue" title="New folder">
+					<i class="material-icons">create_new_folder</i>
+				</a></li>
+			</ul>
+		</div>
+	</div>
+
+	<div id="editor" class="col s8">
+		<div id="editorToolbar">
+			<div id="phraseType" class="switch">
+				<label>
+					Plain Text
+					<input type="checkbox">
+					<span class="lever"></span>
+					Rich Text
+				</label>
+			</div>
+		</div>
+		<div id="textEditor">
+			<textarea id="phraseBody" placeholder="Enter your phrase here..."></textarea>
+		</div>
+		<div class="row">
+			<div class="input-field col s6">
+				<input type="text" id="hotstring">
+				<label for="hotstring">Abbreviation</label>
+			</div>
+			<div class="input-field col s6">
+				<input type="text" id="hotkey">
+				<label for="hotkey">Hotkey</label>
+			</div>
+		</div>
+		<div class="row">
+			<div class="input-field col s6">
+				<input type="text" id="triggers">
+				<label for="triggers">Triggers</label>
+				<span class="helper-text">Enter \t for Tab and \n for Enter</span>
+			</div>
+			<div class="input-field col s6">
+				<select id="pasteMethod">
+					<option value="paste">Paste</option>
+					<option value="type">Type</option>
+					<option value="altpaste">Alt. Paste</option>
+				</select>
+				<label>Send via</label>
+			</div>
+		</div>
+		<div class="row">
+			<div class="input-field col s6">
+				<input type="text" id="wmClass" class="autocomplete">
+				<label for="wmClass">Window Class</label>
+			</div>
+			<div class="input-field col s6">
+				<input type="text" id="wmTitle" class="autocomplete">
+				<label for="wmTitle">Window Title</label>
+			</div>
+		</div>
+		<div class="row">
+			<button id="cancelBtn" class="col s2 push-s7 btn waves-effect waves-light red lighten-1">Cancel</button>
+			<button id="saveBtn" class="col s2 push-s7 btn waves-effect waves-light green">Save</button>
+		</div>
+	</div>
+	<div id="renameDialog" class="modal">
+		<div class="modal-content">
+			<div class="input-field">
+				<i class="material-icons prefix">edit</i>
+				<input id="renameInput" type="text">
+				<label for="renameInput">Enter new name</label>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<a href="#!" id="renameSubmit" class="modal-close waves-effect waves-green btn-flat">Rename</a>
+			<a href="#!" class="modal-close waves-effect waves-green btn-flat">Cancel</a>
+		</div>
+	</div>
+	<div id="deleteWarning" class="modal">
+		<div class="modal-content">
+			<h5>Are you sure?</h5>
+			<p>Deleting a folder will also remove it's contents!</p>
+		</div>
+		<div class="modal-footer">
+			<a href="#!" id="deleteSubmit" class="modal-close waves-effect waves-red btn-flat">Delete</a>
+			<a href="#!" class="modal-close waves-effect waves-green btn-flat">Cancel</a>
+		</div>
+	</div>
+</section>
+<section id="settings">
+	<div class="container">
+		<div class="section">
+			<div id="phraseDir" class="row">
+				<div class="input-field inline col s6 push-s3">
+					<i class="material-icons prefix teal-text">folder</i>
+					<input id="pathDisplay" type="text" readonly>
+					<label for="pathDisplay">Phrase directory</label>
+				</div>
+			</div>
+			<div class="row">
+				<label class="col s6 push-s3">
+					<input id="keepTrig" type="checkbox" />
+					<span>Keep trigger after expansion</span>
+				</label>
+			</div>
+			<div class="row">
+				<label class="col s6 push-s3">
+					<input id="useTab" type="checkbox" />
+					<span>Use Tab key to cycle caret</span>
+				</label>
+			</div>
+			<div class="row">
+				<div class="input-field col s6 push-s3">
+					<select id="theme">
+						<option value="False">Dark</option>
+						<option value="True">Light</option>
+					</select>
+					<label>Tray icon theme</label>
+				</div>
+			</div>
+			<div class="row">
+				<div class="divider col s6 push-s3"></div>
+			</div>
+			<div class="row">
+				<div class="input-field col s6 push-s3">
+					<input type="text" id="pauseKey">
+					<label for="pauseKey">Pause expansion hotkey</label>
+				</div>
+			</div>
+			<div class="row">
+				<div class="input-field col s6 push-s3">
+					<input type="text" id="managerKey">
+					<label for="managerKey">Show manager hotkey</label>
+				</div>
+			</div>
+			<div class="row">
+				<button id="settingsCancel" class="col s3 push-s3 btn waves-effect waves-light red lighten-1">Cancel</button>
+				<button id="settingsSave" class="col s3 push-s3 btn waves-effect waves-light green">Save</button>
+			</div>
+		</div>
+	</div>
+</section>
+</body>
+</html>

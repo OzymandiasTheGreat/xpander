@@ -38,7 +38,7 @@ class Settings(ConfigParser):
 
 		src = Path(__file__).parent / 'data/settings.ini'
 		if getattr(sys, 'frozen', False):
-			return Path(sys.executable, 'default.ini')
+			return Path(sys.executable).parent / 'data/settings.ini'
 		else:
 			if src.exists():
 				return src
@@ -49,7 +49,7 @@ class Settings(ConfigParser):
 	def user_path(self):
 
 		if getattr(sys, 'frozen', False):
-			portable = Path(sys.executable, 'user.ini')
+			portable = Path(sys.executable).with_name('settings.ini')
 			if portable.exists():
 				return portable
 		return Path(user_config_dir(appname, vendor), 'settings.ini')
@@ -119,6 +119,7 @@ class Settings(ConfigParser):
 	def reload(self):
 
 		self.read(self.user_path)
+
 
 class Manager(object):
 

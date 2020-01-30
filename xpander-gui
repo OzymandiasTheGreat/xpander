@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 from pathlib import Path
 from xpander.fs import Settings, Manager
 from xpander.control import BaseClient, ClientType, MSG, MsgType
@@ -7,6 +8,8 @@ from xpander.gtk_gui import Editor
 
 
 NAME = 'xpander-gui'
+if getattr(sys, 'frozen', False):
+	__file__ = sys.executable
 
 
 class EditorClient(BaseClient):

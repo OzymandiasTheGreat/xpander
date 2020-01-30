@@ -93,13 +93,11 @@ class Server(Thread):
 		while not self.stop:
 			for conn in conn_wait(self.connections.values(), 0.5):
 				try:
-					try:
-						msg = conn.recv()
-						self.process_msg(msg, conn)
-					except ConnectionResetError:
-						pass
-				except EOFError:
+					msg = conn.recv()
+					self.process_msg(msg, conn)
+				except (EOFError, ConnectionResetError):
 					pass
+			time.sleep(0.5)
 
 	def close(self):
 

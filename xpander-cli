@@ -9,6 +9,8 @@ from xpander.control import BaseClient, ClientType, MsgType, MSG
 
 
 NAME = 'xpander-cli'
+if getattr(sys, 'frozen', False):
+	__file__ = sys.executable
 DAEMON = Path(__file__).resolve().with_name('xpanderd')
 
 

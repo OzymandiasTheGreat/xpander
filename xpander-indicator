@@ -12,7 +12,7 @@ if sys.platform.startswith('linux'):
 	from gi.repository import Gtk, GLib, AppIndicator3
 	INDICATOR = True
 else:
-	from gi.repository import Gtk, GLib
+	from gi.repository import Gtk, GLib, GdkPixbuf
 	INDICATOR = False
 from xpander.control import BaseClient, ClientType, MsgType, MSG
 from xpander.fs import Settings
@@ -20,23 +20,27 @@ from xpander.gtk_dialogs import AboutDialog
 
 
 NAME = 'xpander-indicator'
-PATH = Path('xpanderd')
 if getattr(sys, 'frozen', False):
-	PATH = sys.executable / PATH.with_suffix('.exe')
+	__file__ = sys.executable
+	SERVICE_COMMAND = [str(Path(__file__).with_name('xpanderd.exe'))]
 else:
-	PATH = Path(__file__).resolve().parent / PATH
-if sys.platform.startswith('linux'):
-	SERVICE_COMMAND = [str(PATH)]
-elif getattr(sys, 'frozen', False):
-	SERVICE_COMMAND = [str(PATH)]
-else:
-	SERVICE_COMMAND = ['python3', str(PATH)]
-START_DIR = Path(__file__).resolve().parent
-if (START_DIR / 'data/xpander.svg').exists():
-	ICON_ACTIVE = str(START_DIR / 'data/xpander-active.svg')
-	ICON_PAUSED = str(START_DIR / 'data/xpander-paused.svg')
-	ICON_ACTIVE_LIGHT = str(START_DIR / 'data/xpander-active-light.svg')
-	ICON_PAUSED_LIGHT = str(START_DIR / 'data/xpander-paused-light.svg')
+	DAEMON = Path('xpanderd')
+	if sys.platform.startswith('linux'):
+		if DAEMON.exists():
+			SERVICE_COMMAND = [str(DAEMON.resolve())]
+		else:
+			SERVICE_COMMAND = [str(DAEMON)]
+	else:
+		if DAEMON.exists():
+			SERVICE_COMMAND = ['python3', str(DAEMON.resolve())]
+		else:
+			SERVICE_COMMAND = None
+ROOT = Path(__file__).resolve().parent
+if (ROOT / 'data/xpander.svg').exists():
+	ICON_ACTIVE = str(ROOT / 'data/xpander-active.svg')
+	ICON_PAUSED = str(ROOT / 'data/xpander-paused.svg')
+	ICON_ACTIVE_LIGHT = str(ROOT / 'data/xpander-active-light.svg')
+	ICON_PAUSED_LIGHT = str(ROOT / 'data/xpander-paused-light.svg')
 else:
 	ICON_ACTIVE = 'xpander-active'
 	ICON_PAUSED = 'xpander-paused'

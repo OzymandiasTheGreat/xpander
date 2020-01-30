@@ -1,0 +1,10 @@
+{
+	"hotstring": "ffill",
+	"triggers": [],
+	"type": 1,
+	"body": "First name${KEY_TAB}Last name${KEY_TAB}Address${KEY_TAB}Phone no.",
+	"method": 2,
+	"wm_class": [],
+	"wm_title": "",
+	"hotkey": null
+}

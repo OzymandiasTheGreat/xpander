@@ -18,10 +18,10 @@ from markdown2 import Markdown
 from macpy import Keyboard, HotString, HotKey, Key, KeyState, Window, Pointer
 from macpy import PointerEventButton, KeyboardEvent
 from macpy.platform import Platform, PLATFORM
-import klembord as Clipboard
 if sys.platform.startswith('linux'):
-	del sys.modules['klembord']
 	import klembord as Primary
+	del sys.modules['klembord']
+import klembord as Clipboard
 from .phrase import Phrase, PhraseType, PasteMethod
 from .gtk_dialogs import FILLIN, FillDialog
 from .html import PlainText
@@ -120,8 +120,13 @@ class Service(Thread):
 	def register_phrase(self, phrase):
 
 		if phrase.hotstring:
+			triggers = phrase.triggers
+			if sys.platform.startswith('win32') and '\n' in triggers:
+				triggers = list(triggers)
+				triggers.remove('\n')
+				triggers.append('\r')
 			hotstring = self.keyboard.register_hotstring(
-				phrase.hotstring, phrase.triggers, self.callback)
+				phrase.hotstring, triggers, self.callback)
 			self.phrases[hotstring] = phrase
 		if phrase.hotkey:
 			hotkey = self.keyboard.register_hotkey(
@@ -191,66 +196,78 @@ class Service(Thread):
 						traceback.format_exception(
 							type(e), e, e.__traceback__))
 			else:
-				if not self.pause:
-					phrase = method
-					event = args[0]
-					if self.match_wm(phrase):
-						if isinstance(event, HotString):
-							hotstring = event
-						else:
-							hotstring = None
-						self.backspace(phrase)
-						richtext = False
-						keep_trig = self.settings.getbool('keep_trig')
-						if phrase.type in {PhraseType.RICHTEXT, PhraseType.HTML,
-								PhraseType.MARKDOWN}:
-							richtext = True
-						body = phrase.body
-						if REPHRASE.search(body):
-							body = self.embed(body, richtext)
-						if keep_trig:
-							if TRIGREM in body:
-								keep_trig = False
-								body = body.replace(TRIGREM, '')
-						else:
-							if TRIGKEEP in body:
-								keep_trig = True
-								body = body.replace(TRIGKEEP, '')
-						if phrase.type is PhraseType.MARKDOWN:
-							body = self.markdown.convert(body)
-						if REMATH.search(body) or REFORMAT.search(body):
-							body = self.datetime(body)
-						if CLIPBOARD in body or PRIMARY in body:
-							body = self.expand_selections(body, richtext)
-						if phrase.type is PhraseType.COMMAND:
-							body = self.run_command(body)
-						if FILLIN.search(body):
-							dialog = FillDialog(body, richtext)
-							response = dialog.run()
-							if response == Gtk.ResponseType.OK:
-								body = dialog.get_string()
-							dialog.destroy()
-							while Gtk.events_pending():
-								Gtk.main_iteration()
-						move_caret = False
-						if CARET in body:
-							if richtext:
-								body_wc = self.plaintext.extract(body, False)
+				try:
+					if not self.pause:
+						phrase = method
+						event = args[0]
+						if self.match_wm(phrase):
+							if isinstance(event, HotString):
+								hotstring = event
 							else:
-								body_wc = body
-							body = body.replace(CARET, '')
-							move_caret = True
-						time.sleep(0.5)
-						if REKEY.search(body):
-							self.send_with_keys(phrase, body, richtext)
-						else:
-							self.send(phrase, body, richtext)
-						if keep_trig and hotstring:
-							self.send(phrase, hotstring.trigger, False)
+								hotstring = None
+							if hotstring:
+								self.backspace(hotstring)
+							richtext = False
+							keep_trig = self.settings.getbool('keep_trig')
+							if phrase.type in {PhraseType.RICHTEXT,
+									PhraseType.HTML, PhraseType.MARKDOWN}:
+								richtext = True
+							body = phrase.body
+							if REPHRASE.search(body):
+								body = self.embed(body, richtext)
+							if keep_trig:
+								if TRIGREM in body:
+									keep_trig = False
+									body = body.replace(TRIGREM, '')
+							else:
+								if TRIGKEEP in body:
+									keep_trig = True
+									body = body.replace(TRIGKEEP, '')
+							if phrase.type is PhraseType.MARKDOWN:
+								body = self.markdown.convert(body)
+							if REMATH.search(body) or REFORMAT.search(body):
+								body = self.datetime(body)
+							if CLIPBOARD in body or PRIMARY in body:
+								body = self.expand_selections(body, richtext)
+							if phrase.type is PhraseType.COMMAND:
+								body = self.run_command(body)
+							if FILLIN.search(body):
+								dialog = FillDialog(body, richtext)
+								response = dialog.run()
+								if response == Gtk.ResponseType.OK:
+									body = dialog.get_string()
+								dialog.destroy()
+								while Gtk.events_pending():
+									Gtk.main_iteration()
+							move_caret = False
+							if CARET in body:
+								if richtext:
+									body_wc = self.plaintext.extract(
+										body, False)
+								else:
+									body_wc = body
+								body = body.replace(CARET, '')
+								move_caret = True
+							time.sleep(0.05)
+							if sys.platform.startswith('linux'):
+								body = body.replace('\r\n', '\n')
+							else:
+								body = body.replace('\n', '\r\n')
+							if REKEY.search(body):
+								self.send_with_keys(phrase, body, richtext)
+							else:
+								self.send(phrase, body, richtext)
+							if keep_trig and hotstring:
+								self.send(phrase, hotstring.trigger, False)
+								if move_caret:
+									body_wc += hotstring.trigger
 							if move_caret:
-								body_wc += hotstring.trigger
-						if move_caret:
-							self.move_caret(body_wc)
+								self.move_caret(body_wc)
+				except Exception as e:
+					print(
+						'Error while expanding:\n',
+						*traceback.format_exception(
+							type(e), e, e.__traceback__))
 
 	def match_wm(self, phrase):
 
@@ -267,13 +284,17 @@ class Service(Thread):
 		title_match = True if phrase.wm_title in window.title else False
 		return class_match and title_match
 
-	def backspace(self, phrase):
+	def backspace(self, hotstring):
 
-		length = len(phrase.hotstring)
-		if phrase.triggers:
+		length = len(hotstring.string)
+		if self.settings.getbool('use_tab') and hotstring.trigger == '\t':
+			length - 1
+		if hotstring.triggers:
 			length += 1
 		for i in range(length):
 			self.keyboard.keypress(Key.KEY_BACKSPACE)
+		if sys.platform.startswith('win32'):
+			time.sleep(0.2)
 
 	def embed(self, string, richtext):
 
@@ -426,8 +447,9 @@ class Service(Thread):
 			self.keyboard.keypress(Key.KEY_CTRL, state=KeyState.PRESSED)
 			self.keyboard.keypress(Key.KEY_V)
 			self.keyboard.keypress(Key.KEY_CTRL, state=KeyState.RELEASED)
-		time.sleep(0.1)
-		# ~ Clipboard.set_with_rich_text(*content)
+		if sys.platform.startswith('linux'):
+			time.sleep(0.1)
+		Clipboard.set_with_rich_text(*content)
 
 	def altpaste(self, string, richtext):
 
@@ -483,18 +505,42 @@ class Service(Thread):
 		states = {'down': KeyState.PRESSED, 'up': KeyState.RELEASED}
 		last_pos = 0
 		for match in REKEY.finditer(body):
+			# ~ time.sleep(0.1)
 			if (match.start() - last_pos) > 0:
 				fragment = body[last_pos:match.start()]
 				self.send(phrase, fragment, richtext)
+				time.sleep(0.05)
 			last_pos = match.end()
 			key = getattr(Key, match['key'], None)
+			# ~ time.sleep(0.1)
 			if match['state']:
 				state = states[match['state']]
 				if key:
-					self.keyboard.keypress(key, state)
+					if (key is Key.KEY_TAB
+							and self.settings.getbool('use_tab')
+							and PLATFORM is not Platform.WAYLAND):
+						window = Window.get_active()
+						if state is KeyState.PRESSED:
+							window.send_event(self.tab_down_event)
+						else:
+							window.send_event(self.tab_up_event)
+					else:
+						self.keyboard.keypress(key, state)
 			else:
 				if key:
-					self.keyboard.keypress(key)
+					if (key is Key.KEY_TAB
+							and self.settings.getbool('use_tab')
+							and PLATFORM is not Platform.WAYLAND):
+						window = Window.get_active()
+						window.send_event(self.tab_down_event)
+						window.send_event(self.tab_up_event)
+					else:
+						self.keyboard.keypress(key)
+			time.sleep(0.05)
+		if last_pos < len(body):
+			# ~ time.sleep(0.1)
+			self.send(phrase, body[last_pos:], richtext)
+			time.sleep(0.05)
 
 	def move_caret(self, string):
 
@@ -513,6 +559,7 @@ class Service(Thread):
 				self.caret_pos.append(next_pos - start)
 				start = next_pos
 				string = temp_string
+		time.sleep(0.05)
 		for i in range(caret_pos):
 			self.keyboard.keypress(Key.KEY_LEFT)
 

@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 
-import time
+import sys
 from pathlib import Path
-# ~ from threading import enumerate as thread_enum
 from xpander.fs import Settings, Manager
 from xpander.service import Service
 from xpander.control import Server
+
+
+if getattr(sys, 'frozen', False):
+	__file__ = sys.executable
 
 
 settings = Settings()
@@ -20,4 +23,3 @@ server.start()
 service.register_hotkeys()
 for path, phrase in manager.phrases.items():
 	service.register_phrase(phrase)
-print('Go!')

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-__version__ = '2.0.0a1'
+__version__ = '2.0.0b0'
 appname = 'xpander'
 vendor = 'Ozymandias'
 author = 'Tomas Ravinskas'

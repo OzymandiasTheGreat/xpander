@@ -1045,6 +1045,7 @@ class Editor(Gtk.Window):
 				old_path = self.phrasestore[path][4]
 				new_path = str(Path(old_path).with_name(text + '.json'))
 				phrase = self.manager.move(str(old_path), str(new_path))
+				self.phrasestore[path][4] = str(new_path)
 				if not self.client.offline:
 					self.client.send(MSG(
 						MsgType.MOVE, (str(old_path), str(new_path), phrase)))
@@ -2021,7 +2022,10 @@ class Editor(Gtk.Window):
 		def parse_hotkey(key, mods):
 
 			gdkkey = Gdk.KeymapKey()
-			gdkkey.keycode = key.ec.value + 8
+			if sys.platform.startswith('linux'):
+				gdkkey.keycode = key.ec.value + 8
+			else:
+				gdkkey.keycode = key.vk.value
 			gdkkey.group = 0
 			gdkkey.level = 0
 			keyval = self.keymap.lookup_key(gdkkey)
@@ -2053,7 +2057,10 @@ class Editor(Gtk.Window):
 
 		def parse_hotkey(xkeycode, modmask):
 
-			key = Key.from_ec(xkeycode - 8)
+			if sys.platform.startswith('linux'):
+				key = Key.from_ec(xkeycode - 8)
+			else:
+				key = Key.from_vk(xkeycode)
 			mods = []
 			if modmask & Gdk.ModifierType.SHIFT_MASK:
 				mods.append(Key.KEY_SHIFT)

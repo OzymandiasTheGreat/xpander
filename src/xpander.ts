@@ -7,12 +7,19 @@ import Xdg from "xdg-app-paths";
 import * as PKG from "../package.json";
 
 
-const SHELL = new PythonShell("src/xpander.py", {
-	mode: "json",
-	pythonOptions: ["-u"],
-	stderrParser: (line) => JSON.stringify(line),
-});
 const xdg = Xdg({ name: PKG.name, suffix: "", isolated: true });
+const SHELL = new PythonShell(
+	app.isPackaged ? path.resolve(process.resourcesPath, "xpander.pyz") : "src/xpander.py",
+	{
+		mode: "json",
+		// pythonPath: "python3",
+		pythonOptions: ["-u"],
+		stderrParser: (line) => JSON.stringify(line),
+		env: { SHIV_ROOT: xdg.cache(), ...process.env },
+	});
+const iconExt = process.platform === "linux" ? "png" : "ico";
+const icon16 = process.platform === "linux" ? ".16x16" : "";
+const icon48 = process.platform === "linux" ? ".48x48" : "";
 let TRAY_MENU: Menu | null;
 let TRAY: Tray | null;
 let MANAGER_WINDOW: BrowserWindow | null;
@@ -47,7 +54,7 @@ function createTray() {
 		} },
 	];
 	let theme = Settings.DEFAULT.light_theme === "True" ? "light" : "dark";
-	let icon = `src/static/icons/xpander-gui-${PAUSE ? "inactive" : "active"}-${theme}.png`;
+	let icon = path.resolve(__dirname, `./static/icons/xpander-${PAUSE ? "inactive" : "active"}-${theme}${icon16}.${iconExt}`);
 	TRAY_MENU = Menu.buildFromTemplate(template);
 
 	TRAY = new Tray(icon);
@@ -66,7 +73,7 @@ function fillinWindow() {
 		alwaysOnTop: true,
 		fullscreenable: false,
 		skipTaskbar: true,
-		icon: "src/static/icons/xpander-gui.png",
+		icon: path.resolve(__dirname, `./static/icons/xpander${icon48}.${iconExt}`),
 	});
 	// window.removeMenu();
 	return window;
@@ -81,10 +88,10 @@ function managerWindow() {
 			webPreferences: {
 				nodeIntegration: true,
 			},
-			icon: "src/static/icons/xpander-gui.png",
+			icon: path.resolve(__dirname, `./static/icons/xpander${icon48}.${iconExt}`),
 		});
 		MANAGER_WINDOW.removeMenu();
-		MANAGER_WINDOW.loadFile("src/static/manager.html");
+		MANAGER_WINDOW.loadFile(path.resolve(__dirname, "./static/manager.html"));
 		MANAGER_WINDOW.once("closed", () => MANAGER_WINDOW = null);
 	}
 	return MANAGER_WINDOW;
@@ -102,10 +109,10 @@ function aboutWindow() {
 			resizable: false,
 			fullscreenable: false,
 			skipTaskbar: true,
-			icon: "src/static/icons/xpander-gui.png",
+			icon: path.resolve(__dirname, `./static/icons/xpander${icon48}.${iconExt}`),
 		});
 		ABOUT_WINDOW.removeMenu();
-		ABOUT_WINDOW.loadFile("src/static/about.html");
+		ABOUT_WINDOW.loadFile(path.resolve(__dirname, "./static/about.html"));
 		ABOUT_WINDOW.once("closed", () => ABOUT_WINDOW = null);
 	}
 	return ABOUT_WINDOW;
@@ -120,7 +127,7 @@ SHELL.on("message", (msg) => {
 	if (msg.type === "phrase") {
 		if (msg.action === "fillin") {
 			let window = fillinWindow();
-			window.loadFile("src/static/fillin.html").then(() => {
+			window.loadFile(path.resolve(__dirname,"./static/fillin.html")).then(() => {
 				window.webContents.send("phrase", msg);
 			});
 		}
@@ -134,7 +141,7 @@ SHELL.on("message", (msg) => {
 					PAUSE = false;
 				}
 				let theme = Settings.DEFAULT.light_theme === "True" ? "light" : "dark";
-				let icon = `src/static/icons/xpander-gui-${PAUSE ? "inactive" : "active"}-${theme}.png`;
+				let icon = path.resolve(__dirname, `./static/icons/xpander-${PAUSE ? "inactive" : "active"}-${theme}${icon16}.${iconExt}`);
 				TRAY?.setImage(icon);
 			}
 		}
@@ -160,7 +167,7 @@ ipcMain.on("settings", (event, msg) => {
 	if (msg.action === "reload") {
 		Settings = loadSettings();
 		let theme = Settings.DEFAULT.light_theme === "True" ? "light" : "dark";
-		let icon = `src/static/icons/xpander-gui-${PAUSE ? "inactive" : "active"}-${theme}.png`;
+		let icon = path.resolve(__dirname, `./static/icons/xpander-${PAUSE ? "inactive" : "active"}-${theme}${icon16}.${iconExt}`);
 		TRAY?.setImage(icon);
 	}
 });

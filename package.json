@@ -8,10 +8,35 @@
   "scripts": {
     "tsc": "tsc",
     "sass": "node-sass --importer=node_modules/node-sass-tilde-importer src/static/styles/ -o src/static/styles",
-    "start": "yarn sass && yarn tsc && electron --disable-gpu ."
+    "clean": "git clean -dxff",
+    "build_py": "shiv -c xpander.py -o build/xpander.pyz .",
+    "build":" yarn sass && yarn tsc",
+    "start": "yarn build && electron --disable-gpu .",
+    "dist": "yarn build && electron-builder -l AppImage"
   },
   "build": {
     "appId": "tk.ozymandias.xpander",
+    "linux": {
+      "category": "Utility"
+    },
+    "files": [
+      "!.vscode",
+      "!.venv",
+      "!src/**/*.sass",
+      "!src/**/*.ts",
+      "!src/xpander.py",
+      "!src/xpander_data",
+      "!src/xpander_py",
+      "!**/xpander.egg-info",
+      "!cloc.md",
+      "!**/*requirements.txt",
+      "!poetry.lock",
+      "!pyproject.toml",
+      "!setup.py",
+      "!tsconfig.json",
+      "!yarn.lock"
+    ],
+    "extraResources": [{ "from": "build/xpander.pyz", "to": "xpander.pyz" }]
   },
   "dependencies": {
     "ini": "^1.3.5",

@@ -4,14 +4,22 @@ version = "3.0.0rc0"
 description = "Text expander for Windows and Linux."
 authors = ["Ozymandias <tomas.rav@gmail.com>"]
 license = "MIT"
+repository = "https://github.com/OzymandiasTheGreat/xpander"
+packages = [{ include = "src/xpander_py" }, { include = "src/xpander_data" }]
+include = ["src/xpander_py/data/**/*"]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.6"
 appdirs = "^1.4"
 macpy = "^0.1.2"
 klembord = "^0.2.1"
+Jinja2 = "^2.11.1"
+MarkupSafe = "^1.1.1"
+importlib_resources = {version = "^1.0.2", markers = "python_version < '3.7'"}
 
 [tool.poetry.dev-dependencies]
+shiv = "^0.1.0"
+wheel = "^0.34.2"
 
 [build-system]
 requires = ["poetry>=0.12"]

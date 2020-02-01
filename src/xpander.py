@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from xpander_py.server import Server
 from xpander_py.fs import Settings, Manager
 from xpander_py.service import Service
@@ -6,6 +7,7 @@ from xpander_py.context import PHRASES
 
 
 Settings.load()
+Settings.save()
 manager = Manager()
 manager.load()
 service = Service()

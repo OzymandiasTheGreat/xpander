@@ -1,5 +1,8 @@
+import sys
 from enum import Enum
+from traceback import format_exception
 from jinja2 import Template
+from jinja2.exceptions import TemplateError
 from macpy import Key
 
 
@@ -27,7 +30,10 @@ class Phrase(object):
 		self.triggers = tuple(triggers)
 		self.type = PhraseType(phrasetype)
 		self.body = body
-		self.template = Template(body)
+		try:
+			self.template = Template(body)
+		except TemplateError as e:
+			print(format_exception(e.__class__, e, e.__traceback__), file=sys.stderr)
 		self.method = PasteMethod(method)
 		self.wm_class = tuple(wm_class)
 		self.wm_title = wm_title

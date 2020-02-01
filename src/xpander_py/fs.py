@@ -1,25 +1,29 @@
 import json
 from pathlib import Path
+try:
+	from importlib import resources
+except ImportError:
+	import importlib_resources as resources
 from configparser import ConfigParser
 # from ast import literal_eval
-from shutil import copytree
 from traceback import format_tb
 from appdirs import user_config_dir
 from macpy import Key
+import xpander_data
+import xpander_data.examples
 from .phrase import asPhrase
 from .server import Server
 from .context import PHRASES
 
 
-PKG = json.loads(Path("package.json").read_text())
+try:
+	PKG = json.loads(Path("package.json").read_text())
+except FileNotFoundError:
+	PKG = {'name': 'xpander'}
 
 
 class Settings(object):
 	parser = ConfigParser()
-
-	@classmethod
-	def defaultConfig(cls):
-		return Path('data/settings.ini')
 
 	@classmethod
 	def userConfig(cls):
@@ -67,7 +71,9 @@ class Settings(object):
 
 	@classmethod
 	def load(cls):
-		return cls.parser.read((cls.defaultConfig(), cls.userConfig()))
+		# with resources.path(xpander_data, 'settings.ini') as default:
+		# 	return cls.parser.read((str(default), cls.userConfig()))
+		return cls.parser.read([cls.userConfig()])
 
 	@classmethod
 	def save(cls):
@@ -79,13 +85,18 @@ class Manager(object):
 
 	def __init__(self):
 		super().__init__()
-		self.default = Path('data/phrases')
 		self.phrases = {}
 
 	def load(self):
 		root = Settings.getPath('phrase_dir').expanduser()
 		if not root.exists():
-			self.writeDefaults(root)
+			examples = root / 'Examples'
+			examples.mkdir(parents=True, exist_ok=True)
+			for example in resources.contents(xpander_data.examples):
+				if not example.startswith('__'):
+					(examples / example).write_text(
+						resources.read_text(xpander_data.examples, example)
+					)
 		for filepath in root.glob('**/*.json'):
 			phrase = self.loadPhrase(filepath, root)
 			self.phrases[str(filepath.resolve())] = phrase
@@ -107,6 +118,3 @@ class Manager(object):
 			}
 			Server.sendError(msg)
 		return phrase
-
-	def writeDefaults(self, dest):
-		copytree(str(self.default.resolve()), str(dest.expanduser().resolve()))

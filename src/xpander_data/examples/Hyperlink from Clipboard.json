@@ -6,7 +6,7 @@
 		"\t"
 	],
 	"type": "plaintext",
-	"body": "<a href=\"$C\">$|</a>",
+	"body": "<a href=\"{{ clipboard() }}\">$|</a>",
 	"method": "paste",
 	"wm_class": [],
 	"wm_title": "",

@@ -1,35 +1,47 @@
 import * as fs from "fs";
 import * as path from "path";
-import { app, ipcMain, BrowserWindow, Menu, MenuItemConstructorOptions, Tray } from "electron";
+import * as os from "os";
+import { app, ipcMain, BrowserWindow, Menu, MenuItemConstructorOptions, Tray, dialog } from "electron";
 import { PythonShell } from "python-shell";
 import * as ini from "ini";
+import mkdirp from "mkdirp";
 import Xdg from "xdg-app-paths";
 import * as PKG from "../package.json";
 
 
 const xdg = Xdg({ name: PKG.name, suffix: "", isolated: true });
+let Settings = loadSettings();
 const SHELL = new PythonShell(
 	app.isPackaged ? path.resolve(process.resourcesPath, "xpander.pyz") : "src/xpander.py",
 	{
 		mode: "json",
-		// pythonPath: "python3",
+		pythonPath: process.platform === 'linux' ? "python3" : "python",
 		pythonOptions: ["-u"],
 		stderrParser: (line) => JSON.stringify(line),
-		env: { SHIV_ROOT: xdg.cache(), ...process.env },
+		env: { SHIV_ROOT: xdg.cache(), PYTHONUTF8: "1", ...process.env },
 	});
 const iconExt = process.platform === "linux" ? "png" : "ico";
 const icon16 = process.platform === "linux" ? ".16x16" : "";
 const icon48 = process.platform === "linux" ? ".48x48" : "";
 let TRAY_MENU: Menu | null;
 let TRAY: Tray | null;
+let FILLIN_WINDOW: BrowserWindow | null;
 let MANAGER_WINDOW: BrowserWindow | null;
 let ABOUT_WINDOW: BrowserWindow | null;
 let PAUSE: boolean = false;
-let Settings = loadSettings();
 
 
 function loadSettings() {
-	return ini.parse(fs.readFileSync(path.join(xdg.config(), 'settings.ini'), 'utf-8'));
+	const config = process.platform === 'linux' ? xdg.config() : path.join(os.homedir(), "AppData/Local/", PKG.name);
+	let settings;
+	try {
+		settings = ini.parse(fs.readFileSync(path.join(config, 'settings.ini'), 'utf-8'));
+	} catch(err) {
+		settings = ini.parse(fs.readFileSync(path.resolve(__dirname, "./xpander_data/settings.ini"), "utf-8"));
+		mkdirp.sync(config);
+		fs.writeFileSync(path.join(config, "settings.ini"), ini.stringify(settings), "utf-8");
+	}
+	return settings;
 }
 
 
@@ -72,10 +84,13 @@ function fillinWindow() {
 		resizable: false,
 		alwaysOnTop: true,
 		fullscreenable: false,
-		skipTaskbar: true,
+		// skipTaskbar: true,
 		icon: path.resolve(__dirname, `./static/icons/xpander${icon48}.${iconExt}`),
 	});
-	// window.removeMenu();
+	window.removeMenu();
+	window.once("show", () => {
+		SHELL.send({ "type": "main", "action": "focus", "hwnd": window.getNativeWindowHandle() });
+	});
 	return window;
 }
 
@@ -126,9 +141,9 @@ app.on("ready", createTray);
 SHELL.on("message", (msg) => {
 	if (msg.type === "phrase") {
 		if (msg.action === "fillin") {
-			let window = fillinWindow();
-			window.loadFile(path.resolve(__dirname,"./static/fillin.html")).then(() => {
-				window.webContents.send("phrase", msg);
+			FILLIN_WINDOW= fillinWindow();
+			FILLIN_WINDOW.loadFile(path.resolve(__dirname,"./static/fillin.html")).then(() => {
+				FILLIN_WINDOW?.webContents.send("phrase", msg);
 			});
 		}
 	} else if (msg.type === "main") {
@@ -143,6 +158,12 @@ SHELL.on("message", (msg) => {
 				let theme = Settings.DEFAULT.light_theme === "True" ? "light" : "dark";
 				let icon = path.resolve(__dirname, `./static/icons/xpander-${PAUSE ? "inactive" : "active"}-${theme}${icon16}.${iconExt}`);
 				TRAY?.setImage(icon);
+			}
+		} else if (msg.action === "focus") {
+			if (FILLIN_WINDOW) {
+				setTimeout(() => {
+					FILLIN_WINDOW?.focus();
+				}, 250);
 			}
 		}
 	} else if (msg.type === "manager") {

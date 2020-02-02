@@ -43,7 +43,8 @@ const newPhrase: IPhrase = {
 	"wm_title": "",
 }
 const xdg = Xdg({ name: PKG.name, suffix: "", isolated: true });
-const Settings = ini.parse(fs.readFileSync(path.join(xdg.config(), 'settings.ini'), 'utf-8'));
+const config = process.platform === 'linux' ? xdg.config() : path.join(os.homedir(), "AppData/Local/", PKG.name);
+const Settings = ini.parse(fs.readFileSync(path.join(config, 'settings.ini'), 'utf-8'));
 
 
 class TextEditor {
@@ -561,7 +562,7 @@ $(document).ready(() => {
 		Settings.DEFAULT.light_theme = $("#theme").formSelect("getSelectedValues")[0];
 		Settings.HOTKEY.pause = JSON.stringify(toHotkey($("#pauseKey").val() || ""));
 		Settings.HOTKEY.manager = JSON.stringify(toHotkey($("#managerKey").val() || ""));
-		fs.writeFile(path.join(xdg.config(), 'settings.ini'), ini.stringify(Settings), () => {
+		fs.writeFile(path.join(config, 'settings.ini'), ini.stringify(Settings), () => {
 			ipcRenderer.send("settings", { "type": "settings", "action": "reload" });
 		});
 	});

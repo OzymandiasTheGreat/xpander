@@ -1,6 +1,13 @@
 # Xpander
 
+![Fill-in-the-blank](screenshots/fillin.gif)
+
 A [Text Expander](https://textexpander.com/) inspired text expander and text macro appication for Windows and Linux.
+
+![Insert from clipboard](screenshots/clipboard.gif)
+![Manager window](screenshots/manager.png)
+![Settings tab](screenshots/settings.png)
+![About window](screenshots/about.png)
 
 ## About
 
@@ -14,6 +21,28 @@ Each phrase is stored as specially formatted JSON file.
 By default they a placed in `~/.phrases` but you can change it in
 settings.
 Since these are small text files and Xpander is cross platform you can easily sync these between computers.
+
+## Bugs
+
+Of course there are bugs! Nothing major, just something to keep in mind while I
+iron them out.
+
+### Firefox
+
+Firefox web browser has a ridiculously slow event loop, so when programatically
+(like, *really* quickly) sending events, some get "swallowed" or dropped.
+
+What this means in practice:
+
+- When expanding a phrase sometimes one or two of the abbreviation characters get left behind.
+
+### Windows
+
+- Enabling caret cycling with `Tab` key in settings disables `Tab` key in most native applications.
+This happens because sending events directly to active window is wonky on windows.
+Usually you have to find active control and send the event directly to it instead.
+- Fill-in-the-blank window gets pushed to the background on first showing requiring to `alt-Tab` to it.
+This shouldn't happen when popping up a second, third, ... time.
 
 ## Features
 

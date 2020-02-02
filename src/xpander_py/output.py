@@ -1,6 +1,7 @@
 import sys
 import time
 import re
+from markupsafe import escape_silent
 from macpy import Window, Pointer
 from macpy import Key, KeyState, KeyboardEvent, PointerEventButton
 from macpy import PLATFORM, Platform
@@ -23,13 +24,6 @@ MODS = {
 	'SHIFT': False,
 	'ALTGR': False,
 	'CTRL': False,
-	'ALT': False,
-	'META': False,
-}
-MODS_CTRL = {
-	'SHIFT': False,
-	'ALTGR': False,
-	'CTRL': True,
 	'ALT': False,
 	'META': False,
 }
@@ -60,39 +54,19 @@ class Output(object):
 			self.pointer = Pointer()
 
 	def paste(self, text, richText):
-		if sys.platform.startswith('linux'):
-			time.sleep(0.05)
+		# time.sleep(0.05)
 		content = self.clipboard.get_with_rich_text()
-		if sys.platform.startswith('linux'):
-			time.sleep(0.05)
+		time.sleep(0.05)
 		if richText:
 			self.clipboard.set_with_rich_text(text, richText)
 		else:
-			self.clipboard.set_text(text)
-		if sys.platform.startswith('linux'):
-			time.sleep(0.05)
-		if PLATFORM is not Platform.WAYLAND:
-			window = Window.get_active()
-			window.send_event(KeyboardEvent(
-				Key.KEY_V,
-				KeyState.PRESSED,
-				None,
-				MODS_CTRL,
-				LOCKS,
-			))
-			window.send_event(KeyboardEvent(
-				Key.KEY_V,
-				KeyState.RELEASED,
-				None,
-				MODS_CTRL,
-				LOCKS,
-			))
-		else:
-			self.keyboard.keypress(Key.KEY_CTRL, state=KeyState.PRESSED)
-			self.keyboard.keypress(Key.KEY_V)
-			self.keyboard.keypress(Key.KEY_CTRL, state=KeyState.RELEASED)
-		if sys.platform.startswith('linux'):
-			time.sleep(0.05)
+			# self.clipboard.set_text(text)
+			self.clipboard.set_with_rich_text(text, str(escape_silent(text)))
+		time.sleep(0.05)
+		self.keyboard.keypress(Key.KEY_CTRL, state=KeyState.PRESSED)
+		self.keyboard.keypress(Key.KEY_V)
+		self.keyboard.keypress(Key.KEY_CTRL, state=KeyState.RELEASED)
+		time.sleep(0.3)
 		self.clipboard.set_with_rich_text(*(str(s) for s in content))
 
 	def altPaste(self, text, richText):
@@ -169,85 +143,49 @@ class Output(object):
 							if match.group('state') == 'DOWN' \
 								else KeyState.RELEASED
 					self.keyboard.keypress(key, state)
+					if sys.platform.startswith('linux'):
+						time.sleep(0.01)
 				else:
 					output(method, fragment[0], fragment[1])
+				time.sleep(0.01)
 		else:
 			output(method, text, richText)
 
 	def backspace(self, amount):
-		if PLATFORM is not Platform.WAYLAND:
-			window = Window.get_active()
-			for i in range(amount):
-				window.send_event(KeyboardEvent(
-					Key.KEY_BACKSPACE,
-					KeyState.PRESSED,
-					None,
-					MODS,
-					LOCKS,
-				))
-			window.send_event(KeyboardEvent(
-				Key.KEY_BACKSPACE,
-				KeyState.RELEASED,
-				None,
-				MODS,
-				LOCKS,
-			))
+		for i in range(amount):
+			self.keyboard.keypress(Key.KEY_BACKSPACE)
+			time.sleep(0.05)
 
 	def backward(self, amount):
-		if PLATFORM is not Platform.WAYLAND:
-			window = Window.get_active()
-			for i in range(amount):
-				window.send_event(KeyboardEvent(
-					Key.KEY_LEFT,
-					KeyState.PRESSED,
-					None,
-					MODS,
-					LOCKS,
-				))
-			window.send_event(KeyboardEvent(
-				Key.KEY_LEFT,
-				KeyState.RELEASED,
-				None,
-				MODS,
-				LOCKS,
-			))
+		for i in range(amount):
+			self.keyboard.keypress(Key.KEY_LEFT)
+			time.sleep(0.05)
 
 	def forward(self, amount):
-		if PLATFORM is not Platform.WAYLAND:
-			window = Window.get_active()
-			for i in range(amount):
-				window.send_event(KeyboardEvent(
-					Key.KEY_RIGHT,
-					KeyState.PRESSED,
-					None,
-					MODS,
-					LOCKS,
-				))
-			window.send_event(KeyboardEvent(
-				Key.KEY_RIGHT,
-				KeyState.RELEASED,
-				None,
-				MODS,
-				LOCKS,
-			))
+		for i in range(amount):
+			self.keyboard.keypress(Key.KEY_RIGHT)
+			time.sleep(0.05)
 
 	def tab(self):
-		if PLATFORM is not Platform.WAYLAND:
-			window = Window.get_active()
-			window.send_event(KeyboardEvent(
-				Key.KEY_TAB,
-				KeyState.PRESSED,
-				None,
-				MODS,
-				LOCKS,
-			))
-			window.send_event(KeyboardEvent(
-				Key.KEY_TAB,
-				KeyState.RELEASED,
-				None,
-				MODS,
-				LOCKS,
-			))
+		# if PLATFORM is Platform.X11:
+		window = Window.get_active()
+		window.send_event(KeyboardEvent(
+			Key.KEY_TAB,
+			KeyState.PRESSED,
+			None,
+			MODS,
+			LOCKS,
+		))
+		window.send_event(KeyboardEvent(
+			Key.KEY_TAB,
+			KeyState.RELEASED,
+			None,
+			MODS,
+			LOCKS,
+		))
+		# elif PLATFORM is Platform.WINDOWS:
+			# self.keyboard.keypress(Key.KEY_TAB)
+			# self.keyboard.type('\t')
 
 	def quit(self):
 		if PLATFORM is Platform.WAYLAND:

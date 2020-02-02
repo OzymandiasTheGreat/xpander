@@ -126,7 +126,8 @@ def key(key, state=None):
 
 
 def clipboard():
-	return Clipboard.get_text() or ''
+	text = Clipboard.get_text()
+	return text.replace('\x00', '') if text else ''
 
 
 def primary():

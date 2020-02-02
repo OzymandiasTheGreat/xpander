@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
+import sys
+import time
 from xpander_py.server import Server
 from xpander_py.fs import Settings, Manager
 from xpander_py.service import Service
 from xpander_py.util import listWindows
 from xpander_py.context import PHRASES
+if sys.platform.startswith('win32'):
+	from macpy import WinWindow
 
 
 Settings.load()
@@ -18,6 +22,10 @@ def mainHandler(msg):
 		service.quit()
 	elif msg['action'] == 'pause':
 		service.togglePause(state=msg['state'])
+	elif msg['action'] == 'focus' and sys.platform.startswith('win32'):
+		time.sleep(0.1)
+		WinWindow(int(msg['hwnd'])).activate()
+		Server.send({'type': 'main', 'action': 'focus'})
 
 
 def phraseHandler(msg):

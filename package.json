@@ -9,15 +9,19 @@
     "tsc": "tsc",
     "sass": "node-sass --importer=node_modules/node-sass-tilde-importer src/static/styles/ -o src/static/styles",
     "clean": "git clean -dxff",
-    "build_py": "shiv -c xpander.py -o build/xpander.pyz .",
-    "build":" yarn sass && yarn tsc",
+    "build_py": "shiv -p '/usr/bin/env python3' -c xpander.py -o build/xpander.pyz .",
+    "build": " yarn sass && yarn tsc",
     "start": "yarn build && electron --disable-gpu .",
-    "dist": "yarn build && electron-builder -l AppImage"
+    "dist": "yarn build && electron-builder -w nsis -l AppImage"
   },
   "build": {
     "appId": "tk.ozymandias.xpander",
     "linux": {
+      "icon": "build/icons/",
       "category": "Utility"
+    },
+    "win": {
+      "icon": "build/icon.ico"
     },
     "files": [
       "!.vscode",
@@ -25,7 +29,8 @@
       "!src/**/*.sass",
       "!src/**/*.ts",
       "!src/xpander.py",
-      "!src/xpander_data",
+      "!src/xpander_data/examples",
+      "!src/xpander_data/__init__.py",
       "!src/xpander_py",
       "!**/xpander.egg-info",
       "!cloc.md",
@@ -36,7 +41,12 @@
       "!tsconfig.json",
       "!yarn.lock"
     ],
-    "extraResources": [{ "from": "build/xpander.pyz", "to": "xpander.pyz" }]
+    "extraResources": [
+      {
+        "from": "build/xpander.pyz",
+        "to": "xpander.pyz"
+      }
+    ]
   },
   "dependencies": {
     "ini": "^1.3.5",
@@ -44,6 +54,7 @@
     "jquery": "^3.4.1",
     "material-design-icons-iconfont": "^5.0.1",
     "materialize-css": "^1.0.0-rc.2",
+    "mkdirp": "^1.0.3",
     "python-shell": "^1.0.8",
     "readdirp": "^3.3.0",
     "rimraf": "^3.0.1",

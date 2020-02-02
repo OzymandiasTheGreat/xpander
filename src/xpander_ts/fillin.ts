@@ -8,6 +8,13 @@ const okButton = $("#ok");
 const cancelButton = $("#cancel");
 
 
+window.addEventListener("load", () => {
+	setTimeout(() => {
+		$(":input").filter(":first").focus();
+	}, 250);
+});
+
+
 ipcRenderer.on("phrase", (event, msg) => {
 	if (fillinBody) {
 		fillinBody.html(msg.body);

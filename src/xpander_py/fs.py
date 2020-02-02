@@ -99,8 +99,9 @@ class Manager(object):
 					)
 		for filepath in root.glob('**/*.json'):
 			phrase = self.loadPhrase(filepath, root)
-			self.phrases[str(filepath.resolve())] = phrase
-			PHRASES[phrase.name] = phrase
+			if phrase:
+				self.phrases[str(filepath.resolve())] = phrase
+				PHRASES[phrase.name] = phrase
 
 	def loadPhrase(self, filepath, root):
 		filepath = filepath if isinstance(filepath, Path) else Path(filepath)
@@ -109,6 +110,7 @@ class Manager(object):
 				phrase = json.loads(fd.read(), object_hook=asPhrase)
 				phrase.name = filepath.stem
 				phrase.path = filepath.expanduser().relative_to(root)
+				return phrase
 		except Exception as e:
 			msg = {
 				'type': 'phraseLoad',
@@ -117,4 +119,3 @@ class Manager(object):
 				'traceback': format_tb(e.__traceback__),
 			}
 			Server.sendError(msg)
-		return phrase

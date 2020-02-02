@@ -165,6 +165,8 @@ class Service(Thread):
 						self.output.backward(
 							len(body + trigger) - self.tabPos.pop()
 						)
+						if not Settings.getBool('use_tab'):
+							self.tabPos.clear()
 
 	def fillin(self, phrase):
 		time.sleep(0.05)

@@ -13,6 +13,8 @@ import "simple-module";
 import "simple-hotkeys";
 import "simple-uploader";
 import Simditor from "simditor";
+import csv from "csv-parser";
+import stripBOM from "strip-bom-stream";
 import * as PKG from "../../package.json";
 import * as KeyMap from "../xpander_ts/keymap.json";
 
@@ -428,6 +430,55 @@ function loadSettings() {
 }
 
 
+function stripQuotes(str: string): string {
+	if (str.startsWith(`"`) && str.endsWith(`"`)) {
+		return str.slice(1, str.length - 2);
+	}
+	return str;
+}
+
+
+function importCSV(textEditor: TextEditor) {
+	remote.dialog.showOpenDialog(
+		remote.getCurrentWindow(),
+		{
+			filters: [{ extensions: ["csv"], name: "TextExpander CSV" }],
+		},
+	)
+	.then((result) => {
+		if (!result.canceled) {
+			const rootPath = path.join(expandUser(Settings.DEFAULT.phrase_dir), "imported");
+			fs.mkdirSync(rootPath);
+			for (const csvFile of result.filePaths) {
+				if (fs.existsSync(csvFile)) {
+					fs.createReadStream(csvFile).pipe(stripBOM()).pipe(csv(["shortcut", "body", "label"]))
+					.on("data", (row) => {
+						let phrase: IPhrase = JSON.parse(JSON.stringify(newPhrase));
+						phrase.body = stripQuotes(row.body);
+						phrase.type = "plaintext";
+						phrase.hotstring = stripQuotes(row.shortcut);
+						phrase.hotkey = toHotkey("");
+						phrase.triggers = [];
+						phrase.method = "paste";
+						phrase.wm_class = [];
+						phrase.wm_title = "";
+						const filePath = path.join(rootPath, `${stripQuotes(row.label)}.json`);
+						fs.writeFile(filePath, JSON.stringify(phrase), () => {
+							ipcRenderer.send("phrase", {
+								"type": "phrase",
+								"action": "edit",
+								"path": filePath,
+							});
+						});
+					})
+					.on("end", () => buildTree(expandUser(Settings.DEFAULT.phrase_dir), $("#files")).then(() => attachTreeEvents($("#files"), textEditor)));
+				}
+			}
+		}
+	});
+}
+
+
 $(document).ready(() => {
 	const textEditor = new TextEditor();
 
@@ -470,6 +521,9 @@ $(document).ready(() => {
 			iteration++;
 		}
 		fs.mkdir(folderPath, () => buildTree(expandUser(Settings.DEFAULT.phrase_dir), $("#files")).then(() => attachTreeEvents($("#files"), textEditor)));
+	});
+	$("#importCSV").on("click", function(event) {
+		importCSV(textEditor);
 	});
 
 	resetEditor(textEditor);

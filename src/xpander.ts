@@ -105,6 +105,7 @@ function managerWindow() {
 			},
 			icon: path.resolve(__dirname, `./static/icons/xpander${icon48}.${iconExt}`),
 		});
+		// (<any> MANAGER_WINDOW).openDevTools();
 		MANAGER_WINDOW.removeMenu();
 		MANAGER_WINDOW.loadFile(path.resolve(__dirname, "./static/manager.html"));
 		MANAGER_WINDOW.once("closed", () => MANAGER_WINDOW = null);

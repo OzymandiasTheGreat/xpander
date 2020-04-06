@@ -11,6 +11,12 @@ A [Text Expander](https://textexpander.com/) inspired text expander and text mac
 
 ## About
 
+-------------------
+
+If you find this software useful, [consider becoming a patron](https://www.patreon.com/ozymandias)
+
+-------------------
+
 Xpander is written python 3 and typescript. It runs on Windows and Linux, with possibility to port to more platforms.
 
 You type an abbreviation and it's automatically expanded to (replaced with) a predefined block of text called a phrase.

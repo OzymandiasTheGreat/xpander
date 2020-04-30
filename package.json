@@ -55,7 +55,7 @@
     "csv-parser": "^2.3.2",
     "ini": "^1.3.5",
     "jqtree": "^1.4.12",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "material-design-icons-iconfont": "^5.0.1",
     "materialize-css": "^1.0.0-rc.2",
     "mkdirp": "^1.0.3",

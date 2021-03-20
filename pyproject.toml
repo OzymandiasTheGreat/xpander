@@ -13,7 +13,7 @@ python = "^3.6"
 appdirs = "^1.4"
 macpy = "^0.1.2"
 klembord = "^0.2.1"
-Jinja2 = "^2.11.1"
+Jinja2 = "^2.11.3"
 MarkupSafe = "^1.1.1"
 importlib_resources = {version = "^1.0.2", markers = "python_version < '3.7'"}
 

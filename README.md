@@ -1,5 +1,13 @@
 # Xpander
 
+#### ARCHIVED
+
+I haven't touched this project in a very long while and I no longer use it myself,
+therefore I decided to archive this repository.
+
+----------------------------------------------------------------------------------
+
+
 ![Fill-in-the-blank](screenshots/fillin.gif)
 
 A [Text Expander](https://textexpander.com/) inspired text expander and text macro appication for Windows and Linux.
